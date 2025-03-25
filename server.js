@@ -48,6 +48,15 @@ app.get('/api/data', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+  res.send(`
+    <h1>API IoT Fonctionnelle</h1>
+    <p>Endpoints disponibles :</p>
+    <ul>
+      <li><strong>POST /api/data</strong> - Envoyer des données capteur</li>
+      <li><strong>GET /api/data</strong> - Récupérer les données</li>
+    </ul>
+    <p>Consultez la <a href="/api/data">dernière donnée</a></p>
+  `);
 });
 
 const PORT = process.env.PORT || 3000;
