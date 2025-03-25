@@ -31,4 +31,4 @@ app.get('/api/data', async (req, res) => {
 
 // Démarrer le serveur
 const port = 3000;
-app.listen(port, () => console.log(`🚀 Serveur prêt sur http://localhost:${port}`));ss
+app.listen(port, () => console.log(`🚀 Serveur prêt sur http://localhost:${port}`));
