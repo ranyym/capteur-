@@ -40,14 +40,16 @@ app.post('/api/data', async (req, res) => {
   }
 });
 
-app.get('/api/data', async (req, res) => {
-  try {
-    const data = await SensorData.find().sort('-timestamp');
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
+app.get('/', (req, res) => {
+    res.json({
+      message: "API IoT Fonctionnelle",
+      endpoints: {
+        postData: "POST /api/data",
+        getData: "GET /api/data"
+      }
+    });
+  });
+  app.use(express.json()); // Pour parser le JSON
+  app.use(cors()); // Si vous testez depuis un domaine différent
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Serveur prêt sur le port ${PORT}`));
