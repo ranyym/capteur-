@@ -8,7 +8,7 @@ app.use(express.json());
 
 // 1. Récupérez cette URI depuis MongoDB Atlas > Connect > Drivers
 // 2. Remplacez USERNAME, PASSWORD, CLUSTERNAME et DATABASE
-const MONGODB_URI = 'mongodb+srv://ranimferjeoui16:<Ranim*@2580>@cluster0.mongodb.net/mon-projet-db?retryWrites=true&w=majority';
+const MONGODB_URI = 'mongodb://ranimferjeoui16:<Ranim*@2580>@cluster0-shard-00-00.vd7qi.mongodb.net:27017,cluster0-shard-00-01.vd7qi.mongodb.net:27017,cluster0-shard-00-02.vd7qi.mongodb.net:27017/?replicaSet=atlas-ahcmuu-shard-0&ssl=true&authSource=admin&retryWrites=true&w=majority&appName=Cluster0';
 
 // Options de connexion importantes
 const mongooseOptions = {
