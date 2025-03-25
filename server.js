@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 // Connexion MongoDB
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://username:password@cluster.mongodb.net/iot_data?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://ranimferjeoui16:<Ranim*@2580>@cluster0.vd7qi.mongodb.net/?appName=Cluster0';
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('✅ Connecté à MongoDB'))
