@@ -1,46 +1,63 @@
-require('dotenv').config();
+// server.js
 const express = require('express');
 const mongoose = require('mongoose');
-const http = require('http');
-const { Server } = require('socket.io');
 const cors = require('cors');
-const SensorData = require('./models/SensorData');
-
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
-
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
+// Connexion à MongoDB Atlas
+mongoose.connect('mongodb+srv://ranimferjeoui16:<Ranim*@2580>@cluster0.vd7qi.mongodb.net/?appName=Cluster0"');
 
-// Connexion à MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('✅ Connecté à MongoDB Atlas'))
-.catch(err => console.error('❌ Erreur MongoDB:', err));
-
-// Route API pour recevoir les données
-app.post('/api/sensors', async (req, res) => {
-    try {
-        const data = new SensorData(req.body);
-        await data.save();
-        io.emit('newData', data);
-        res.status(201).json({ message: '✅ Données enregistrées', data });
-    } catch (error) {
-        res.status(500).json({ message: '❌ Erreur serveur', error });
-    }
+// Schéma de données
+const sensorSchema = new mongoose.Schema({
+  temperature: Number,
+  humidity: Number,
+  timestamp: { type: Date, default: Date.now }
 });
 
-// WebSocket pour la connexion des clients
-io.on('connection', (socket) => {
-    console.log('🟢 Un client est connecté !');
-    socket.on('disconnect', () => {
-        console.log('🔴 Un client s’est déconnecté');
-    });
+const SensorData = mongoose.model('SensorData', sensorSchema);
+
+// Route pour recevoir les données de l'ESP32
+app.post('/api/data', async (req, res) => {
+  try {
+    const { temperature, humidity } = req.body;
+    const newData = new SensorData({ temperature, humidity });
+    await newData.save();
+    res.status(201).send('Data saved');
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
 
-// Lancer le serveur
-const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => console.log(`🚀 Serveur en ligne sur le port ${PORT}`));
+// Route pour récupérer les données
+app.get('/api/data', async (req, res) => {
+  try {
+    const data = await SensorData.find().sort({ timestamp: -1 }).limit(50);
+    res.json(data);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Ajoutez ceci à server.js
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', (ws) => {
+  console.log('New client connected');
+  
+  // Envoi périodique des nouvelles données
+  const sendData = async () => {
+    const data = await SensorData.find().sort({ timestamp: -1 }).limit(1);
+    ws.send(JSON.stringify(data[0]));
+  };
+  
+  const interval = setInterval(sendData, 5000);
+  
+  ws.on('close', () => {
+    clearInterval(interval);
+    console.log('Client disconnected');
+  });
+});
