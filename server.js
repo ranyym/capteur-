@@ -6,22 +6,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. Récupérez cette URI depuis MongoDB Atlas > Connect > Drivers
-// 2. Remplacez USERNAME, PASSWORD, CLUSTERNAME et DATABASE
-const MONGODB_URI = 'mongodb://ranimferjeoui16:Ranim2580@cluster0-shard-00-00.vd7qi.mongodb.net:27017,cluster0-shard-00-01.vd7qi.mongodb.net:27017,cluster0-shard-00-02.vd7qi.mongodb.net:27017/?replicaSet=atlas-ahcmuu-shard-0&ssl=true&authSource=admin&retryWrites=true&w=majority&appName=Cluster0';
-
-// Options de connexion importantes
-const mongooseOptions = {
-  connectTimeoutMS: 10000,
-  serverSelectionTimeoutMS: 5000
-};
-
-mongoose.connect(MONGODB_URI, mongooseOptions)
+// Connexion MongoDB (à remplacer par vos variables d'environnement)
+mongoose.connect('mongodb://ranimferjeoui16:Ranim580@cluster0-shard-00-00.vd7qi.mongodb.net:27017,cluster0-shard-00-01.vd7qi.mongodb.net:27017,cluster0-shard-00-02.vd7qi.mongodb.net:27017/?replicaSet=atlas-ahcmuu-shard-0&ssl=true&authSource=admin&retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('✅ MongoDB connecté'))
-  .catch(err => {
-    console.error('❌ Erreur MongoDB:', err.message);
-    console.log('Vérifiez votre URI:', MONGODB_URI.replace(/:[^@]*@/, ':*****@'));
-  });
+  .catch(err => console.error('❌ Erreur MongoDB:', err));
 
 // Modèle de données
 const SensorData = mongoose.model('SensorData', new mongoose.Schema({
@@ -30,7 +18,42 @@ const SensorData = mongoose.model('SensorData', new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 }));
 
-// Routes
+// Route racine - Version HTML intégrée
+app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>API IoT</title>
+      <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .endpoint { background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0; }
+      </style>
+    </head>
+    <body>
+      <h1>API IoT Opérationnelle</h1>
+      <p>Endpoints disponibles :</p>
+      
+      <div class="endpoint">
+        <h3>POST /api/data</h3>
+        <p>Envoyer des données de capteur</p>
+        <pre>{
+  "temperature": 25.5,
+  "humidity": 60
+}</pre>
+      </div>
+      
+      <div class="endpoint">
+        <h3>GET /api/data</h3>
+        <p>Récupérer les dernières mesures</p>
+        <a href="/api/data" target="_blank">Voir les données</a>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+// Routes API existantes
 app.post('/api/data', async (req, res) => {
   try {
     const data = await SensorData.create(req.body);
@@ -40,7 +63,6 @@ app.post('/api/data', async (req, res) => {
   }
 });
 
-
 app.get('/api/data', async (req, res) => {
   try {
     const data = await SensorData.find().sort('-timestamp');
@@ -48,16 +70,10 @@ app.get('/api/data', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-  res.send(`
-    <h1>API IoT Fonctionnelle</h1>
-    <p>Endpoints disponibles :</p>
-    <ul>
-      <li><strong>POST /api/data</strong> - Envoyer des données capteur</li>
-      <li><strong>GET /api/data</strong> - Récupérer les données</li>
-    </ul>
-    <p>Consultez la <a href="/api/data">dernière donnée</a></p>
-  `);
 });
 
+// Démarrer le serveur
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Serveur prêt sur le port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Serveur prêt sur le port ${PORT}`);
+});
