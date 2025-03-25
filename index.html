@@ -1,22 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <title>IoT Dashboard</title>
-  <script>
-    const ws = new WebSocket('https://capteur-1.onrender.com/');
-    
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      document.getElementById('temp').textContent = data.temperature;
-      document.getElementById('hum').textContent = data.humidity;
-      document.getElementById('time').textContent = new Date(data.timestamp).toLocaleString();
-    };
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard IoT</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .data-container { margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+        button { padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+    </style>
 </head>
 <body>
-  <h1>Données capteur</h1>
-  <p>Température: <span id="temp">-</span> °C</p>
-  <p>Humidité: <span id="hum">-</span> %</p>
-  <p>Dernière mise à jour: <span id="time">-</span></p>
+    <h1>Dashboard IoT</h1>
+    
+    <div>
+        <h2>Envoyer des données</h2>
+        <input type="number" id="temperature" placeholder="Température" step="0.1">
+        <input type="number" id="humidity" placeholder="Humidité" step="0.1">
+        <button onclick="sendData()">Envoyer</button>
+    </div>
+
+    <div class="data-container">
+        <h2>Dernières mesures</h2>
+        <button onclick="fetchData()">Rafraîchir</button>
+        <div id="data-list"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://capteur-1.onrender.com/';
+
+        // Envoyer des données
+        async function sendData() {
+            const temperature = document.getElementById('temperature').value;
+            const humidity = document.getElementById('humidity').value;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ temperature, humidity })
+                });
+                alert('Données envoyées avec succès!');
+                fetchData(); // Rafraîchir après envoi
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de l\'envoi');
+            }
+        }
+
+        // Récupérer les données
+        async function fetchData() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                let html = '<ul>';
+                data.forEach(item => {
+                    html += `<li>${new Date(item.timestamp).toLocaleString()} - Temp: ${item.temperature}°C, Hum: ${item.humidity}%</li>`;
+                });
+                html += '</ul>';
+                
+                document.getElementById('data-list').innerHTML = html;
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('data-list').innerHTML = '<p>Erreur de chargement des données</p>';
+            }
+        }
+
+        // Charger les données au démarrage
+        fetchData();
+    </script>
 </body>
 </html>

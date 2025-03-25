@@ -39,25 +39,7 @@ app.post('/api/data', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
-const WebSocket = require('ws');
-const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws) => {
-  console.log('New client connected');
-  
-  // Envoi périodique des nouvelles données
-  const sendData = async () => {
-    const data = await SensorData.find().sort({ timestamp: -1 }).limit(1);
-    ws.send(JSON.stringify(data[0]));
-  };
-  
-  const interval = setInterval(sendData, 5000);
-  
-  ws.on('close', () => {
-    clearInterval(interval);
-    console.log('Client disconnected');
-  });
-});
 
 app.get('/api/data', async (req, res) => {
   try {
