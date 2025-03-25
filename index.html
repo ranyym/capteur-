@@ -1,24 +1,22 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Données Capteurs en Temps Réel</title>
-    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+  <title>IoT Dashboard</title>
+  <script>
+    const ws = new WebSocket('https://capteur-1.onrender.com/');
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      document.getElementById('temp').textContent = data.temperature;
+      document.getElementById('hum').textContent = data.humidity;
+      document.getElementById('time').textContent = new Date(data.timestamp).toLocaleString();
+    };
+  </script>
 </head>
 <body>
-    <h1>📡 Données Capteurs en Temps Réel</h1>
-    <ul id="data-list"></ul>
-
-    <script>
-        const socket = io("https://mon-projet-api.onrender.com/");
-
-        socket.on("newData", (data) => {
-            const list = document.getElementById("data-list");
-            const item = document.createElement("li");
-            item.textContent = `🌡 Temp: ${data.temperature}°C | 💧 Humidité: ${data.humidity}% | 🔥 Flamme: ${data.flame}`;
-            list.prepend(item);
-        });
-    </script>
+  <h1>Données capteur</h1>
+  <p>Température: <span id="temp">-</span> °C</p>
+  <p>Humidité: <span id="hum">-</span> %</p>
+  <p>Dernière mise à jour: <span id="time">-</span></p>
 </body>
 </html>
